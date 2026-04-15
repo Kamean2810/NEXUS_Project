@@ -13,23 +13,51 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login } = useAuth();
+  const {  } = useAuth();
   const navigate = useNavigate();
   
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-    
-    try {
-      await login(email, password, role);
-      // Redirect based on user role
-      navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
-    } catch (err) {
-      setError((err as Error).message);
-      setIsLoading(false);
+ const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError(null);
+  setIsLoading(true);
+
+  try {
+    const res = await fetch("http://localhost:5000/api/auth/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email,
+        password,
+        role,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.message || "Login failed");
     }
-  };
+
+    // ✅ Save auth data
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("userId", data._id);
+    localStorage.setItem("role", data.role);
+
+    // ✅ Redirect based on role
+    navigate(
+      data.role === "entrepreneur"
+        ? "/dashboard/entrepreneur"
+        : "/dashboard/investor"
+    );
+
+  } catch (err) {
+    setError((err as Error).message);
+  } finally {
+    setIsLoading(false);
+  }
+};
   
   // For demo purposes, pre-filled credentials
   const fillDemoCredentials = (userRole: UserRole) => {
