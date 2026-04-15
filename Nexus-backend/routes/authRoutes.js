@@ -4,7 +4,6 @@ const {
   loginUser,
   getProfile,
   updateProfile,
-  getAllUsers,
 } = require("../controllers/authController");
 const { getAllUsers } = require("../controllers/authController");
 
